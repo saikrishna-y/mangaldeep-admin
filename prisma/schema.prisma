@@ -1,0 +1,1189 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Providers {
+  id         Int       @id @default(autoincrement()) @map("id")
+  name       String
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+  Users      Users[]
+}
+
+model Panchang {
+  id         Int         @id @default(autoincrement()) @map("id")
+  name       String
+  is_active  Boolean     @default(true)
+  created_at DateTime?   @default(now())
+  Locations  Locations[]
+}
+
+model Country {
+  id           Int         @id @default(autoincrement())
+  country_uuid String?     @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  country_code String
+  isDefault    Boolean?
+  isActive     Boolean?
+  is_active    Boolean     @default(true)
+  created_at   DateTime?   @default(now())
+  Locales      Locales[]
+  Locations    Locations[]
+}
+
+model Zone {
+  id         Int         @id @default(autoincrement()) @map("id")
+  name       String
+  is_active  Boolean     @default(true)
+  created_at DateTime?   @default(now())
+  Locations  Locations[]
+}
+
+model Locations {
+  id                   Int                    @id @default(autoincrement()) @map("id")
+  location_uuid        String?                @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  location_code        String
+  zone_id              Int
+  zone_name            String?
+  country_uuid         String?                @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  country_id           Int
+  panchang_id          Int
+  is_active            Boolean                @default(true)
+  created_at           DateTime?              @default(now())
+  Feedback             Feedback[]
+  Locales              Locales[]
+  Country              Country                @relation(fields: [country_id], references: [id])
+  panchang             Panchang               @relation(fields: [panchang_id], references: [id])
+  Zone                 Zone                   @relation(fields: [zone_id], references: [id])
+  NotificationMessages NotificationMessages[]
+  PanchangExcelFile    PanchangExcelFile[]
+  PushNotification     PushNotification[]
+  Users                Users[]
+}
+
+model Locales {
+  id                  Int                 @id @default(autoincrement()) @map("id")
+  locale_uuid         String?             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  location_uuid       String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  location_name       String
+  location_code       String
+  language_uuid       String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  language_name       String?
+  language_code       String?
+  country_uuid        String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  country_name        String?
+  country_code        String?
+  locale_display_name String?
+  location_id         Int
+  language_id         Int
+  country_id          Int
+  created_at          DateTime            @default(now())
+  created_by          String?
+  updated_at          DateTime            @default(now())
+  updated_by          String?
+  deleted_at          DateTime?
+  deleted_by          String?
+  Countries           Country             @relation(fields: [country_id], references: [id])
+  Languages           Languages           @relation(fields: [language_id], references: [id])
+  Locations           Locations           @relation(fields: [location_id], references: [id])
+  MostPlayedSongs     MostPlayedSongs[]
+  PanchangExcelFile   PanchangExcelFile[]
+}
+
+model Deities {
+  id              Int              @id @default(autoincrement()) @map("id")
+  name            String
+  locales         Int[]
+  image_url       String?
+  image_id        Int?
+  isCustomizedGod Boolean          @default(false)
+  created_at      DateTime         @default(now())
+  created_by      String?
+  updated_at      DateTime         @default(now())
+  updated_by      String?
+  deleted_at      DateTime?
+  deleted_by      String?
+  Images          Images?          @relation(fields: [image_id], references: [id])
+  Kavachas        Kavachas[]
+  MangaldeepGeet  MangaldeepGeet[]
+  Pandals         Pandals[]
+  TempleLocator   TempleLocator[]
+}
+
+model Festivals {
+  id               Int                @id @default(autoincrement())
+  festival_uuid    String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  language         String?
+  locales          String
+  is_festive_hub   Boolean?           @default(false)
+  image_url        String?            @default("")
+  image_id         Int?
+  created_at       DateTime           @default(now())
+  created_by       String?
+  updated_at       DateTime           @default(now())
+  updated_by       String?
+  deleted_at       DateTime?
+  deleted_by       String?
+  FestivalCalendar FestivalCalendar[]
+  Images           Images?            @relation(fields: [image_id], references: [id])
+}
+
+model Roles {
+  id        Int     @id @default(autoincrement()) @map("id")
+  name      String
+  is_active Boolean @default(true)
+  Users     Users[]
+}
+
+model Languages {
+  id                     Int                      @id @default(autoincrement()) @map("id")
+  language_uuid          String                   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  language_code          String
+  is_active              Boolean                  @default(true)
+  created_at             DateTime?                @default(now())
+  Feedback               Feedback[]
+  Locales                Locales[]
+  MangaldeepGeetCategory MangaldeepGeetCategory[]
+  NotificationMessages   NotificationMessages[]
+  PanchangExcelFile      PanchangExcelFile[]
+  PushNotification       PushNotification[]
+  TempleOfIndia          TempleOfIndia[]
+  Users                  Users[]
+  feedbackCategory       feedbackCategory[]
+  prasadCategory         prasadCategory[]
+}
+
+model Users {
+  id             Int          @id @default(autoincrement()) @map("id")
+  first_name     String?
+  second_name    String?
+  mobile         String       @unique
+  password       String
+  provider_id    Int
+  location_id    Int
+  language_id    Int
+  role_id        Int
+  is_admin       Boolean?
+  created_at     DateTime     @default(now())
+  created_by     String?
+  updated_at     DateTime     @default(now())
+  updated_by     String?
+  deleted_at     DateTime?
+  deleted_by     String?
+  version        String?
+  source         String?
+  email          String?
+  otp            String?
+  otp_created_at DateTime?    @db.Timestamp(6)
+  Feedback       Feedback[]
+  Usergroups     Usergroups[]
+  Languages      Languages    @relation(fields: [language_id], references: [id])
+  Locations      Locations    @relation(fields: [location_id], references: [id])
+  Providers      Providers    @relation(fields: [provider_id], references: [id])
+  Roles          Roles        @relation(fields: [role_id], references: [id])
+}
+
+model Groups {
+  id         Int          @id @default(autoincrement()) @map("id")
+  name       String
+  created_at DateTime     @default(now())
+  created_by String?
+  Usergroups Usergroups[]
+}
+
+model Usergroups {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  group_id   Int
+  created_at DateTime @default(now())
+  created_by String?
+  Groups     Groups   @relation(fields: [group_id], references: [id])
+  Users      Users    @relation(fields: [user_id], references: [id])
+}
+
+model ImageModules {
+  id        Int      @id @default(autoincrement())
+  name      String
+  is_active Boolean
+  Images    Images[]
+}
+
+model Images {
+  id              Int          @id @default(autoincrement())
+  image_url       String
+  locales         String
+  image_module_id Int
+  created_at      DateTime?    @default(now())
+  Albums          Albums[]
+  Artists         Artists[]
+  Deities         Deities[]
+  Festivals       Festivals[]
+  ImageModules    ImageModules @relation(fields: [image_module_id], references: [id])
+  Kavachas        Kavachas[]
+  Pandals         Pandals[]
+}
+
+model Artists {
+  id         Int       @id @default(autoincrement())
+  name       String
+  image_url  String?
+  image_id   Int?
+  locales    String
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+  Images     Images?   @relation(fields: [image_id], references: [id])
+}
+
+model Albums {
+  id         Int       @id @default(autoincrement())
+  name       String
+  image_url  String?
+  image_id   Int?
+  locales    String
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+  Images     Images?   @relation(fields: [image_id], references: [id])
+}
+
+model EditorialCategories {
+  id                      Int     @id @default(autoincrement())
+  editorial_category_uuid String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                    String?
+  status_id               Int?
+  version                 String? @db.VarChar
+  created_by              String? @db.Uuid
+  modified_by             String? @db.Uuid
+  created_at              String? @db.VarChar
+  updated_at              String? @db.VarChar
+  deleted                 Int?
+  display_order           Int?
+  locales                 String
+  locale_mapping_id       String? @db.VarChar
+  image_url               String?
+}
+
+model EditorialSubCategories {
+  id                         Int     @id @default(autoincrement())
+  editorial_subcategory_uuid String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                       String?
+  category_id                Int?
+  editorial_category_uuid    String? @db.Uuid
+  status_id                  Int?
+  version                    String?
+  created_by                 String? @db.Uuid
+  modified_by                String? @db.Uuid
+  created_at                 String? @db.VarChar
+  updated_at                 String? @db.VarChar
+  deleted                    Int?
+  display_order              Int?
+}
+
+model ModuleStatus {
+  id          Int     @id @default(autoincrement())
+  module_name String
+  locales     Int[]
+  is_active   Boolean @default(true)
+}
+
+model DynamicHeader {
+  id          Int       @id @default(autoincrement())
+  name        String
+  module_name String
+  locales     Int[]
+  is_active   Boolean   @default(true)
+  created_at  DateTime? @default(now())
+}
+
+model GlobalSearchModules {
+  id            Int       @id @default(autoincrement())
+  module_name   String
+  display_order String
+  is_active     Boolean   @default(true)
+  created_at    DateTime? @default(now())
+}
+
+model TempleLocator {
+  id        Int     @id @default(autoincrement())
+  keyword   String
+  deity_id  Int
+  locales   Int[]
+  is_active Boolean @default(true)
+  Deities   Deities @relation(fields: [deity_id], references: [id])
+}
+
+model Pandals {
+  id          Int       @id @default(autoincrement())
+  name        String
+  latitude    String
+  longitude   String
+  description String?
+  address     String?
+  pandal_url  String?
+  locales     String
+  deity_id    Int
+  image_id    Int?
+  is_active   Boolean   @default(true)
+  image_url   String?
+  created_at  DateTime? @default(now())
+  Deities     Deities   @relation(fields: [deity_id], references: [id])
+  Images      Images?   @relation(fields: [image_id], references: [id])
+}
+
+model feedbackCategory {
+  id            Int       @id @default(autoincrement())
+  name          String
+  language_id   Int
+  display_order Int
+  is_active     Boolean   @default(true)
+  created_at    DateTime? @default(now())
+  Languages     Languages @relation(fields: [language_id], references: [id])
+}
+
+model prasadCategory {
+  id            Int       @id @default(autoincrement())
+  name          String
+  language_id   Int
+  display_order Int
+  is_active     Boolean   @default(true)
+  created_at    DateTime? @default(now())
+  Prasad        Prasad[]
+  Languages     Languages @relation(fields: [language_id], references: [id])
+}
+
+model MangaldeepGeetCategory {
+  id             Int              @id @default(autoincrement())
+  name           String
+  language_id    Int
+  display_order  Int
+  is_active      Boolean          @default(true)
+  created_at     DateTime?        @default(now())
+  MangaldeepGeet MangaldeepGeet[]
+  Languages      Languages        @relation(fields: [language_id], references: [id])
+}
+
+model MangaldeepHomeIcon {
+  id         Int       @id @default(autoincrement())
+  name       String
+  icon_url   String
+  locales    Int[]
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+}
+
+model DevotionalSongs {
+  id                   Int       @id @default(autoincrement())
+  devotional_song_uuid String?   @db.Uuid
+  name                 String?
+  locales              String?
+  deities              String?
+  artists              String?
+  audio_url            String?
+  deity_ids            Int[]
+  upload_song          String?
+  is_new_song          Boolean?
+  description_to_share String?
+  is_featured          Boolean?
+  is_famous_song       Boolean?
+  image_url            String?
+  is_trending_now      Boolean?  @default(false)
+  created_at           DateTime? @default(now())
+  duration             String?
+}
+
+model MostPlayedSongs {
+  id         Int       @id @default(autoincrement())
+  songs      Int[]
+  locale_id  Int
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+  Locales    Locales   @relation(fields: [locale_id], references: [id])
+}
+
+model MangaldeepStore {
+  id         Int       @id @default(autoincrement())
+  name       String
+  disclaimer String
+  image_url  String
+  store_url  String
+  order_id   Int
+  locales    Int[]
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+}
+
+model WeekDays {
+  id         Int       @id @default(autoincrement())
+  name       String
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+}
+
+model PujaType {
+  id         Int       @id @default(autoincrement())
+  name       String
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+}
+
+model Sankalp {
+  id         Int       @id @default(autoincrement())
+  text       String
+  locales    Int[]
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+}
+
+model Dainikpanchang {
+  id            Int       @id @default(autoincrement())
+  is_festival   Boolean?  @default(false)
+  is_purnima    Boolean?  @default(false)
+  is_amavasya   Boolean?  @default(false)
+  day           String
+  karna         String
+  yoga          String
+  nakshatra     String
+  sunrise       String
+  sunset        String
+  moonrise      String
+  moonset       String
+  ayana         String
+  masa          String
+  rutu          String
+  samvatsara    String
+  saura_masa    String
+  gulikakala    String
+  rahukal       String
+  yamagandakala String
+  locales       Int[]
+  summary       String
+  is_active     Boolean   @default(true)
+  panchang_date String
+  created_at    DateTime? @default(now())
+}
+
+model FestivalCalendar {
+  id            Int       @id @default(autoincrement())
+  festival_id   Int
+  locales       Int[]
+  is_active     Boolean   @default(true)
+  festival_date String
+  created_at    DateTime? @default(now())
+  Festivals     Festivals @relation(fields: [festival_id], references: [id])
+}
+
+model PanchangExcelFile {
+  id          Int       @id @default(autoincrement())
+  language_id Int
+  location_id Int
+  locale_id   Int
+  file_url    String
+  is_active   Boolean   @default(true)
+  Languages   Languages @relation(fields: [language_id], references: [id])
+  Locales     Locales   @relation(fields: [locale_id], references: [id])
+  Location    Locations @relation(fields: [location_id], references: [id])
+}
+
+model Mantras {
+  id                 Int       @id @default(autoincrement())
+  mantra_uuid        String?   @db.Uuid
+  name               String?
+  mantra_content     String?
+  pronunciation      String?
+  description_text   String?
+  duration           String?
+  is_audio_available Int?
+  deity_name         String?
+  locales            String?
+  deity_id           Int?
+  upload_song        String?
+  is_trending_now    Boolean?  @default(false)
+  is_active          Boolean?  @default(true)
+  created_at         DateTime? @default(now())
+  image_url          String?
+}
+
+model Shlokas {
+  id               Int       @id @default(autoincrement())
+  shloka_uuid      String?   @db.Uuid
+  name             String?
+  deity_id         Int?
+  deity_name       String?
+  content          String?
+  pronunciation    String?
+  description_text String?
+  duration         String?
+  locales          String?
+  created_at       DateTime? @default(now())
+  image_url        String?
+}
+
+model Ashtothras {
+  id                   Int                @id @default(autoincrement())
+  ashtothra_uuid       String?            @db.Uuid
+  name                 String?
+  deity_id             Int?
+  deity_name           String?
+  locales              String?
+  description_to_share String?
+  is_active            Boolean?           @default(true)
+  created_at           DateTime?          @default(now())
+  AshtothraDetails     AshtothraDetails[]
+}
+
+model AshtothraDetails {
+  id             Int         @id @default(autoincrement())
+  ashtothra_uuid String?     @db.Uuid
+  name           String?
+  ashtothra_name String?
+  ashtothras_id  Int?
+  order          Int?
+  created_at     DateTime?   @default(now())
+  Ashtothras     Ashtothras? @relation(fields: [ashtothras_id], references: [id])
+}
+
+model Chalisas {
+  id           Int       @id @default(autoincrement())
+  chalisa_uuid String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chalisa_id   Int?
+  name         String?
+  deity        String?
+  description  String?
+  locales      String?
+  image_url    String?
+  created_at   DateTime? @default(now())
+}
+
+model Kavachas {
+  id              Int       @id @default(autoincrement())
+  name            String
+  deity_id        Int
+  image_id        Int?
+  image_url       String?
+  kavacha_content String
+  locales         String
+  is_active       Boolean   @default(true)
+  created_at      DateTime? @default(now())
+  Deities         Deities   @relation(fields: [deity_id], references: [id])
+  Images          Images?   @relation(fields: [image_id], references: [id])
+}
+
+model GeetaQuotes {
+  id               Int     @id @default(autoincrement())
+  chapter          String? @db.VarChar
+  quote_number     String? @db.VarChar
+  translation_text String? @db.VarChar
+  pronounciation   String? @db.VarChar
+  geeta_quote_id   Int?
+  geeta_quote_uuid String? @db.Uuid
+  language         String?
+}
+
+model GeetaAudio {
+  id                    Int     @id @default(autoincrement())
+  geeta_quote_id        Int?
+  random_uuid           String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  geeta_quote_uuid      String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  geeta_quote           String? @db.VarChar
+  geeta_quote_info      String?
+  translation_text_uuid String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  translation_text      String? @db.VarChar
+  pronounciation        String? @db.VarChar
+  chapter               String?
+  chapter_id            Int
+  quote_number          String? @db.VarChar
+  language              String?
+  language_id           Int?
+  language_uuid         String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  audio_id              Int?
+  audio_uuid            String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  audio_name            String? @db.VarChar
+  audio_url             String?
+  duration              String?
+  created_by            String? @db.VarChar
+  modified_by           String? @db.VarChar
+  status_id             Int?
+  created_at            String? @db.VarChar
+  updated_at            String? @db.VarChar
+  locales               String?
+  locale_mapping_ids    String?
+  synced_date           String?
+  display_order         String?
+  chapter_description   String?
+  shloka_description    String?
+  Chapter               Chapter @relation(fields: [chapter_id], references: [id])
+}
+
+model TempleRaagas {
+  id            Int       @id @default(autoincrement())
+  name          String
+  artist_name   String
+  display_order Int
+  is_android    Boolean
+  is_ios        Boolean
+  url           String
+  duration      String
+  locales       Int[]
+  image_url     String
+  description   String
+  is_active     Boolean   @default(true)
+  created_at    DateTime? @default(now())
+}
+
+model LiveStreaming {
+  id            Int      @id @default(autoincrement())
+  name          String
+  is_video      Boolean
+  video_url     String
+  display_order Int
+  is_android    Boolean
+  is_ios        Boolean
+  duration      String
+  image_url     String
+  date          DateTime
+  locales       Int[]
+  description   String
+  is_active     Boolean  @default(true)
+}
+
+model MangaldeepGeet {
+  id                     Int                    @id @default(autoincrement())
+  name                   String
+  short_description      String?
+  deity_id               Int
+  is_second_carousel     Boolean?
+  is_android             Boolean?
+  is_ios                 Boolean?
+  url                    String
+  duration               String
+  locales                String
+  image_url              String
+  song_description       String?
+  mangaldeep_geet_cat_id Int
+  display_order          Int
+  is_active              Boolean                @default(true)
+  created_at             DateTime?              @default(now())
+  Deities                Deities                @relation(fields: [deity_id], references: [id])
+  MangaldeepGeetCategory MangaldeepGeetCategory @relation(fields: [mangaldeep_geet_cat_id], references: [id])
+}
+
+model ModuleName {
+  id            Int             @id @default(autoincrement())
+  name          String
+  is_active     Boolean         @default(true)
+  DynamicBanner DynamicBanner[]
+}
+
+model DynamicBanner {
+  id             Int        @id @default(autoincrement())
+  module_name_id Int
+  title          String
+  display_order  Int
+  display_title  String
+  is_new         Boolean
+  description    String
+  locales        Int[]
+  module_data    String
+  image_url      String
+  is_active      Boolean    @default(true)
+  created_at     DateTime?  @default(now())
+  ModuleName     ModuleName @relation(fields: [module_name_id], references: [id])
+}
+
+model Events {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  description_text    String
+  url                 String
+  display_order       Int
+  festival_start_date DateTime
+  duration            String
+  venue               String
+  location_url        String?
+  cost                String?
+  tags                String?
+  languages           String?
+  age_limit           String?
+  other               String?
+  locales             Int[]
+  image_url           String
+  image_urls          String[]
+  description         String
+  is_active           Boolean   @default(true)
+  created_at          DateTime? @default(now())
+}
+
+model CarouselGroupingModules {
+  id            Int       @id @default(autoincrement())
+  display_name  String?
+  locales       String?
+  display_order Int?
+  created_at    DateTime? @default(now())
+}
+
+model CarouselGrouping {
+  id                            Int       @id @default(autoincrement())
+  carousel_grouping_module_uuid String?   @db.Uuid
+  name                          String?
+  url                           String?
+  duration                      String?
+  category                      String?
+  locales                       String?
+  carousel_grouping_module_id   Int?
+  short_desc                    String?
+  description                   String?
+  image_url                     String?
+  created_at                    DateTime? @default(now()) @db.Timestamp(6)
+  is_trending_now               Boolean?  @default(false)
+}
+
+model Editorials {
+  id                         Int      @id @default(autoincrement())
+  editorial_uuid             String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                      String?
+  sub_title                  String?
+  editorial_date             String?  @db.VarChar
+  share_url                  String?
+  keywords                   String?
+  short_description          String?
+  editorial_category_uuid    String?  @db.Uuid
+  category_id                Int?
+  subcategory_id             Int?
+  editorial_subcategory_uuid String?  @db.Uuid
+  created_by                 String?  @db.Uuid
+  modified_by                String?  @db.Uuid
+  status_id                  Int?
+  version                    String?  @db.VarChar
+  created_at                 String?  @db.VarChar
+  updated_at                 String?  @db.VarChar
+  deleted                    Int?
+  locale_mapping_id          String?  @db.VarChar
+  locales                    String?
+  description                String?
+  image_url                  String?
+  is_trending_now            Boolean?
+}
+
+model TempleOfIndia {
+  id                Int       @id @default(autoincrement())
+  language_id       Int
+  locales           String
+  deities           Int[]
+  name              String
+  short_description String?
+  url               String
+  image_url         String
+  is_trending_now   Boolean   @default(false)
+  is_active         Boolean   @default(true)
+  created_at        DateTime? @default(now())
+  read_time         String?
+  description       String?
+  Language          Languages @relation(fields: [language_id], references: [id])
+}
+
+model TempleArchitecture {
+  id                       Int       @id @default(autoincrement())
+  temple_architecture_uuid String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  temple_architecture_id   Int?
+  name                     String?
+  short_description        String?
+  description              String?
+  url                      String?
+  duration                 String?
+  locales                  String?
+  image_url                String?
+  created_at               DateTime? @default(now())
+}
+
+model PushNotification {
+  id           Int        @id @default(autoincrement())
+  header_text  String
+  message_text String
+  image_url    String?
+  send_type    String
+  language_id  Int?
+  location_id  Int?
+  user_details String?
+  deep_linking Boolean?
+  is_active    Boolean    @default(true)
+  Language     Languages? @relation(fields: [language_id], references: [id])
+  Location     Locations? @relation(fields: [location_id], references: [id])
+}
+
+model NotificationMessages {
+  id           Int       @id @default(autoincrement())
+  header_text  String
+  message_text String
+  user_token   Int
+  module_name  String
+  module_Data  String
+  language_id  Int
+  location_id  Int
+  sent_at      DateTime  @default(now())
+  users_count  Int
+  Language     Languages @relation(fields: [language_id], references: [id])
+  Location     Locations @relation(fields: [location_id], references: [id])
+}
+
+model Prasad {
+  id                 Int            @id @default(autoincrement()) @map("id")
+  prasad_uuid        String         @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prasad_id          Int?
+  language           String
+  name               String
+  short_description  String?
+  url                String
+  duration           String
+  prasad_category_id Int
+  is_android         Boolean?
+  is_ios             Boolean?
+  locales            String
+  festivals          String
+  image_url          String?
+  prasad_description String?
+  created_at         DateTime       @default(now())
+  is_active          Boolean        @default(true)
+  language_id        Int?
+  festival_ids       Int[]
+  prasadCategory     prasadCategory @relation(fields: [prasad_category_id], references: [id])
+}
+
+model Banner {
+  id          Int       @id @default(autoincrement())
+  type        String?   @db.VarChar(200)
+  image_url   String?
+  description String?
+  created_at  DateTime? @default(now())
+  locales     String?
+}
+
+model DeviceType {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  is_active         Boolean             @default(true)
+  ReleaseManagement ReleaseManagement[]
+}
+
+model Feedback {
+  id                     Int        @id @default(autoincrement())
+  user_name              String?
+  user_id                Int?
+  device_token           String?
+  category_id            Int
+  commented_at           DateTime
+  mobile_number          BigInt?
+  email                  String?
+  comments               String
+  device_name            String?    @default("Default")
+  device_type            String?    @default("Default")
+  os_name                String
+  os_version             String?
+  app_build              Int?
+  app_version            String?    @default("Default")
+  language_id            Int
+  location_id            Int?
+  registration_id        Int?
+  created_at             DateTime?  @default(now())
+  updated_at             DateTime?  @updatedAt
+  failed                 Int?
+  reconciled             Boolean    @default(false)
+  ios_notification_badge Int?
+  is_active              Boolean    @default(true)
+  Language               Languages  @relation(fields: [language_id], references: [id])
+  Location               Locations? @relation(fields: [location_id], references: [id])
+  Users                  Users?     @relation(fields: [user_id], references: [id])
+}
+
+model ReleaseManagement {
+  id                     Int        @id @default(autoincrement())
+  version_number         Int
+  build_number           Int
+  version_date           String
+  device_type_id         Int
+  is_backward_compatible Boolean?
+  popup_count            Int?
+  is_active              Boolean    @default(true)
+  DeviceType             DeviceType @relation(fields: [device_type_id], references: [id])
+}
+
+model TrendingNow {
+  id            Int        @id @default(autoincrement())
+  deleted_at    DateTime?
+  deleted_by    String?
+  is_active     Boolean    @default(true)
+  category_id   Int
+  category_name String
+  type_id       Int
+  count         Int?       @default(0)
+  user_ids      Int[]      @default([])
+  ModuleType    ModuleType @relation(fields: [type_id], references: [id])
+}
+
+model ModuleType {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  is_active        Boolean            @default(true)
+  Favourites       Favourites[]
+  Likes            Likes[]
+  RecentActivities RecentActivities[]
+  Shares           Shares[]
+  TrendingNow      TrendingNow[]
+}
+
+model Read {
+  id            Int     @id @default(autoincrement())
+  user_ids      Int[]   @default([])
+  count         Int?
+  category_name String
+  category_id   Int?
+  is_active     Boolean @default(true)
+  type_id       Int?
+}
+
+model Watch {
+  id            Int     @id @default(autoincrement())
+  user_ids      Int[]   @default([])
+  count         Int?
+  category_name String
+  category_id   Int?
+  is_active     Boolean @default(true)
+  type_id       Int?
+}
+
+model Listen {
+  id            Int     @id @default(autoincrement())
+  user_ids      Int[]   @default([])
+  count         Int?
+  category_name String
+  category_id   Int?
+  is_active     Boolean @default(true)
+  type_id       Int?
+}
+
+model RecentActivities {
+  id            Int        @id @default(autoincrement())
+  user_id       Int
+  category_name String
+  category_id   Int
+  type_id       Int
+  count         Int?
+  created_at    DateTime   @default(now())
+  is_active     Boolean    @default(true)
+  duration      String?
+  ModuleType    ModuleType @relation(fields: [type_id], references: [id])
+}
+
+model Likes {
+  id            Int        @id @default(autoincrement())
+  user_id       Int
+  category_name String
+  category_id   Int
+  type_id       Int
+  count         Int?
+  created_at    DateTime   @default(now())
+  is_active     Boolean    @default(true)
+  ModuleType    ModuleType @relation(fields: [type_id], references: [id])
+}
+
+model Shares {
+  id            Int        @id @default(autoincrement())
+  user_id       Int
+  category_name String
+  category_id   Int
+  type_id       Int
+  count         Int?
+  created_at    DateTime   @default(now())
+  is_active     Boolean    @default(true)
+  ModuleType    ModuleType @relation(fields: [type_id], references: [id])
+}
+
+model Favourites {
+  id            Int        @id @default(autoincrement())
+  user_id       Int
+  category_name String
+  category_id   Int
+  type_id       Int
+  count         Int?
+  created_at    DateTime   @default(now())
+  is_active     Boolean    @default(true)
+  ModuleType    ModuleType @relation(fields: [type_id], references: [id])
+}
+
+model Onboardingquotes {
+  id            Int      @id @default(autoincrement())
+  name          String?
+  locales       Int[]    @default([])
+  display_order Int?
+  image_url     String?
+  is_active     Boolean  @default(true)
+  description   String?
+  created_at    DateTime @default(now())
+}
+
+model About {
+  id          Int      @id @default(autoincrement())
+  category    String
+  description String
+  created_at  DateTime @default(now())
+}
+
+model PujaDeity {
+  id             Int     @id @default(autoincrement())
+  puja_id        String? @db.Uuid
+  puja_name      String? @db.VarChar
+  deity_name     String? @db.VarChar
+  puja_serial_id Int?
+}
+
+model PujaFestival {
+  id             Int     @id @default(autoincrement())
+  puja_id        String? @db.Uuid
+  puja_name      String? @db.VarChar
+  festival_name  String? @db.VarChar
+  puja_serial_id Int?
+}
+
+model PujaLanguage {
+  id             Int     @id @default(autoincrement())
+  puja_id        String? @db.Uuid
+  puja_name      String? @db.VarChar
+  language       String? @db.VarChar
+  puja_serial_id Int?
+}
+
+model PujaLocale {
+  id             Int     @id @default(autoincrement())
+  puja_id        String? @db.Uuid
+  puja_name      String? @db.VarChar
+  locale         String? @db.VarChar
+  puja_serial_id Int?
+}
+
+model PujaMaterials {
+  puja_id            String? @db.Uuid
+  name               String? @db.VarChar
+  quantity           String? @db.VarChar
+  is_optional        String? @db.VarChar
+  order_id           String? @db.VarChar
+  puja_material_name String? @db.VarChar
+  id                 Int     @id @default(autoincrement())
+  puja_serial_id     Int?
+}
+
+model PujaTypesAndWeekDays {
+  id               Int       @id @default(autoincrement())
+  puja_id          String?   @db.Uuid
+  name             String?   @db.VarChar
+  description_text String?   @db.VarChar
+  procedure        String?   @db.VarChar
+  timings          String?   @db.VarChar
+  background       String?   @db.VarChar
+  type             String?   @db.VarChar
+  weekday          String?   @db.VarChar
+  created_at       DateTime? @default(now())
+}
+
+model ChantCount {
+  id              Int       @id @default(autoincrement())
+  mantra_id       Int
+  user_id         Int
+  total_count     Int
+  completed_count Int
+  pending_count   Int
+  mantra_name     String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime?
+}
+
+model Deitie {
+  id              Int      @id @default(autoincrement()) @map("id")
+  deity_uuid      String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @db.VarChar
+  locales         String   @db.VarChar
+  image_url       String?  @db.VarChar
+  iscustomizedgod Boolean? @default(false)
+  created_at      String?
+}
+
+model ChallengeDetails {
+  id           Int        @id @default(autoincrement())
+  challenge_id Int
+  name         String
+  category     String
+  category_id  Int?
+  day          Int
+  points       Int
+  url          String?
+  created_at   DateTime   @default(now())
+  updated_at   DateTime?
+  Challenges   Challenges @relation(fields: [challenge_id], references: [id])
+}
+
+model Challenges {
+  id               Int                @id @default(autoincrement())
+  name             String
+  points           Int
+  days             Int
+  created_at       DateTime           @default(now())
+  description      String
+  ChallengeDetails ChallengeDetails[]
+}
+
+model Chapter {
+  id         Int          @id @default(autoincrement())
+  chapter    String?      @db.VarChar
+  serial_id  Int?
+  language   String?      @db.VarChar
+  GeetaAudio GeetaAudio[]
+}
+
+model PunyaPoints {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int
+  challenge_details_id Int
+  challenge_id         Int
+  points               Int
+  day                  Int
+  is_complete          Boolean
+  created_at           DateTime  @default(now())
+  updated_at           DateTime?
+}
+
+model Transactions {
+  id                 Int      @id @default(autoincrement())
+  user_id            Int
+  type               Int
+  points             Int
+  transaction_source String
+  created_at         DateTime @default(now())
+}
+
+model Wallet {
+  id         Int       @id @default(autoincrement())
+  user_id    Int       @unique(map: "wallet_user_id_unique")
+  points     Int
+  created_at DateTime  @default(now())
+  updated_at DateTime?
+}
+
+model catLive {
+  id                            Int     @id @default(autoincrement())
+  carousel_grouping_module_uuid String? @db.Uuid
+  name                          String?
+  url                           String?
+  duration                      String?
+  category                      String?
+  locales                       String?
+  carousel_grouping_module_id   Int?
+  short_desc                    String?
+  description                   String?
+}
